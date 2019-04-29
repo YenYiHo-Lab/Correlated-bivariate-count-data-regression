@@ -1,1 +1,1 @@
-# BivarNegBin
+# Correlated bivariate count data regression
