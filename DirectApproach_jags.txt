@@ -1,0 +1,36 @@
+data{
+for (i in 1:N){
+zeros[i] <- 0
+}
+}
+
+model{
+for (i in 1:N){
+zeros[i] ~ dpois(-LogL[i])
+
+mu[i,1] <- exp(alpha[1] + beta[1]*x[i])
+m[i,1] <- exp(alpha[2] + beta[2]*x[i])
+theta[i,1] <- mu[i,1]/(m[i,1]+mu[i,1])
+LogL1[i] <- logfact(m[i,1]+Y[i,1]-1) - logfact(Y[i,1]) - logfact(m[i,1]-1) + 
+	Y[i,1]*log(theta[i,1]) + m[i,1]*log(1-theta[i,1])
+
+mu[i,2] <- exp(alpha[3] + beta[3]*x[i])
+m[i,2] <- exp(alpha[4] + beta[4]*x[i])
+theta[i,2] <- mu[i,2]/(m[i,2]+mu[i,2])
+LogL2[i] <- logfact(m[i,2]+Y[i,2]-1) - logfact(Y[i,2]) - logfact(m[i,2]-1) + 
+	Y[i,2]*log(theta[i,2]) + m[i,2]*log(1-theta[i,2])
+
+lambda[i] <- alpha[5] + beta[5]*x[i]
+C1[i] <- pow((1-theta[i,1])/(1-theta[i,1]*exp(-1)),m[i,1])
+C2[i] <- pow((1-theta[i,2])/(1-theta[i,2]*exp(-1)),m[i,2])
+
+LogCov[i] <- log(1 + lambda[i]*(exp(-Y[i,1])-C1[i])*(exp(-Y[i,2])-C2[i]))
+
+LogL[i] <- LogL1[i] + LogL2[i] + LogCov[i]
+}
+
+for (i in 1:5){
+alpha[i] ~ dnorm(0,.01)
+beta[i] ~ dnorm(0,.01)
+}
+}
