@@ -1,0 +1,30 @@
+model{
+for (i in 1:N){
+rho[i] <- tanh(.5*(tau[1]+tau[2]*x[i]))
+sigma[1,1,i] <- 1/(1-rho[i]*rho[i])
+sigma[2,2,i] <- 1/(1-rho[i]*rho[i])
+sigma[1,2,i] <- -rho[i]/(1-rho[i]*rho[i])
+sigma[2,1,i] <- -rho[i]/(1-rho[i]*rho[i])
+Z[i,1:2] ~ dmnorm(rep(0,2),sigma[,,i])
+
+for (j in 1:2){
+Y[i,j] ~ dpois(lambda[i,j])
+lambda[i,j] <- qgamma(pnorm(Z[i,j],0,1),1/disp[i,j],1/disp[i,j])*mu[i,j]
+mu[i,j] <- exp(beta0[j] + beta1[j]*x[i])
+disp[i,j] <- exp(gamma0[j] + gamma1[j]*x[i])
+}
+
+LogL[i] <- -lambda[i,1] - lambda[i,2] + Y[i,1]*log(lambda[i,1]) +
+	Y[i,2]*log(lambda[i,2]) - logfact(Y[i,1]) - logfact(Y[i,2])
+
+}
+
+for (i in 1:2){
+beta0[i] ~ dnorm(0,1)
+beta1[i] ~ dnorm(0,1)
+gamma0[i] ~ dnorm(0,1)
+gamma1[i] ~ dnorm(0,1)
+}
+tau[1] ~ dnorm(0,1)
+tau[2] ~ dnorm(0,(N-3)/4)
+}
